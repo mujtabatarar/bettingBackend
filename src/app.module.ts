@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './modules/user/user.module';
 import { ReviewModule } from './modules/review/review.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from 'config/typeOrmConfig';
@@ -15,7 +14,6 @@ import appConfiguration from 'config/appConfig';
     ConfigModule.forRoot({
       load: [appConfiguration],
     }),
-    UserModule,
     ReviewModule],
   controllers: [AppController],
   providers: [AppService],

@@ -21,9 +21,6 @@ export class ReviewService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly dataSource: DataSource,
-
-
-
   ) { }
 
 
@@ -107,7 +104,7 @@ export class ReviewService {
           .createQueryBuilder('review')
           .where('review.room_id = :roomId', { roomId })
           .andWhere('review.pro_comment IS NOT NULL')
-          .orderBy('review.created_at', 'DESC')
+          .orderBy('review.createdAt', 'DESC')
           .limit(3)
           .getMany(),
       ]);
@@ -165,7 +162,8 @@ export class ReviewService {
   }
 
   async getReviewStatisticsByRoom3(roomId: string): Promise<any> {
-    const queryRunner = getConnection().createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
+
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
@@ -177,7 +175,7 @@ export class ReviewService {
         .getMany();
 
       if (reviewData.length === 0) {
-        throw new exception('No reviews found for the given room ID.');
+        throw new NotFoundException('No reviews found for the given room ID.');
       }
 
       const totalReviews = reviewData.length;
@@ -195,7 +193,7 @@ export class ReviewService {
 
       const lastThreeReviews = reviewData
         .filter(review => review.pro_comment)
-        .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, 3);
 
       await queryRunner.commitTransaction();
@@ -245,7 +243,7 @@ export class ReviewService {
 
       const lastThreeReviews = reviewData
         .filter(review => review.pro_comment)
-        .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, 3);
 
       await queryRunner.commitTransaction();
@@ -263,5 +261,134 @@ export class ReviewService {
       await queryRunner.release();
     }
   }
+
+  async getReviewStatisticsByRoom5(roomId: string): Promise<any> {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const reviewData = await queryRunner.manager
+        .createQueryBuilder(ReviewEntity, 'review')
+        .leftJoinAndSelect('review.review_category', 'reviewCategory')
+        .leftJoinAndSelect('review.user', 'user')
+        .where('review.room_id = :roomId', { roomId })
+        .getMany();
+
+      if (reviewData.length === 0) {
+        throw new NotFoundException('No reviews found for the given room ID.');
+      }
+
+      const totalReviews = reviewData.length;
+      const overallRating = reviewData.reduce((sum, review) => sum + review.overall_rating, 0) / totalReviews;
+
+      const categoriesRatings = reviewData
+        .flatMap(review => review.review_category)
+        .reduce((acc, reviewCategory) => {
+          if (!acc[reviewCategory.category_id]) {
+            acc[reviewCategory.category_id] = 0;
+          }
+          acc[reviewCategory.category_id] += reviewCategory.rating;
+          return acc;
+        }, {});
+
+      const lastThreeReviews = reviewData
+        .filter(review => review.pro_comment)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, 3)
+        .map(review => ({
+          name: review.user.name,
+          country_code: review.user.country_code,
+          img_url: review.user.img_url,
+          overall_rating: review.overall_rating,
+          pro_comment: review.pro_comment,
+          con_comment: review.con_comment,
+          dateOfReview: review.createdAt,
+        }));
+
+      await queryRunner.commitTransaction();
+
+      return {
+        overallRating,
+        totalReviews,
+        categoriesRatings,
+        lastThreeReviews,
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async getReviewStatisticsByRoom6(roomId: string): Promise<any> {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const reviewData = await queryRunner.manager
+        .createQueryBuilder(ReviewEntity, 'review')
+        .leftJoinAndSelect('review.review_category', 'reviewCategory')
+        .leftJoinAndSelect('review.user', 'user')
+        .where('review.room_id = :roomId', { roomId })
+        .getMany();
+
+      if (reviewData.length === 0) {
+        throw new NotFoundException('No reviews found for the given room ID.');
+      }
+
+      const totalReviews = reviewData.length;
+      const overallRating = reviewData.reduce((sum, review) => sum + review.overall_rating, 0) / totalReviews;
+
+      const categoriesRatings = reviewData
+        .flatMap(review => review.review_category)
+        .reduce((acc, reviewCategory) => {
+          if (!acc[reviewCategory.category_id]) {
+            acc[reviewCategory.category_id] = { sum: 0, count: 0 };
+          }
+          acc[reviewCategory.category_id].sum += reviewCategory.rating;
+          acc[reviewCategory.category_id].count += 1;
+          return acc;
+        }, {});
+
+      const averageCategoriesRatings = Object.keys(categoriesRatings).reduce((acc, categoryId) => {
+        acc[categoryId] = categoriesRatings[categoryId].sum / categoriesRatings[categoryId].count;
+        return acc;
+      }, {});
+
+      const lastThreeReviews = reviewData
+        .filter(review => review.pro_comment)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, 3)
+        .map(review => ({
+          name: review.user.name,
+          country_code: review.user.country_code,
+          img_url: review.user.img_url,
+          overall_rating: review.overall_rating,
+          pro_comment: review.pro_comment,
+          con_comment: review.con_comment,
+          dateOfReview: review.createdAt,
+        }));
+
+      await queryRunner.commitTransaction();
+
+      return {
+        overallRating,
+        totalReviews,
+        categoriesRatings: averageCategoriesRatings,
+        lastThreeReviews,
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
 }
 

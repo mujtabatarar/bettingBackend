@@ -3,7 +3,7 @@ import { AbstractEntity } from 'transportation-common';
 import { ReviewEntity } from './review.entity';
 
 @Entity({ name: 'review_categories' })
-@Index(['reviewId'])
+@Index(['review_id'])
 export class ReviewCategoryEntity
     extends AbstractEntity {
     @Column()

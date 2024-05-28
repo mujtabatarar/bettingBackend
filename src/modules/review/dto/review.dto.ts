@@ -2,23 +2,6 @@ import { IsNotEmpty, IsNumber, IsString, IsOptional, ValidateNested, IsArray, Is
 import { Type } from 'class-transformer';
 import { GuestType } from '../enum/review.enum';
 
-/////////COMPREHENSIVE DTO///////////////
-export class CreateCompleteReviewDto {
-    @ValidateNested()
-    @Type(() => CreateUserDto)
-    user: CreateUserDto;
-
-    @ValidateNested()
-    @Type(() => CreateReviewDto)
-    review: CreateReviewDto;
-
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => CreateReviewCategoryDto)
-    reviewCategories: CreateReviewCategoryDto[];
-}
-
-
 ////////GENERIC DTO'S///////////
 export class FindOneDto {
     @IsNotEmpty()
@@ -125,4 +108,22 @@ export class CreateUserDto {
     @IsOptional()
     @IsEnum(GuestType)
     guest_type: GuestType;
+}
+
+
+
+/////////COMPREHENSIVE DTO///////////////
+export class CreateCompleteReviewDto {
+    @ValidateNested()
+    @Type(() => CreateUserDto)
+    user: CreateUserDto;
+
+    @ValidateNested()
+    @Type(() => CreateReviewDto)
+    review: CreateReviewDto;
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateReviewCategoryDto)
+    reviewCategories: CreateReviewCategoryDto[];
 }
