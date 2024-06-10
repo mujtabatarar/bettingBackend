@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ReviewService } from './review.service';
-import { CreateCompleteReviewDto, CreateReviewDto } from './dto/review.dto';
+import { CreateCompleteReviewDto, CreateReviewDto, UpdateHelpfulDto } from './dto/review.dto';
 import { ResponseData } from 'helpers/ResponseHandler';
 
 @Controller('review')
@@ -45,6 +45,11 @@ export class ReviewController {
   @Get('get/six/:roomId')
   async getReviewStatisticsByRoomIdSix(@Param('roomId') roomId: string) {
     return await this.reviewService.getReviewStatisticsByRoom6(roomId);
+  }
+
+  @Post('create/helpfull')
+  async updateHelpfulCountNew(@Body() body: UpdateHelpfulDto) {
+    return await this.reviewService.updateHelpfulCountNew(body);
   }
 
 }

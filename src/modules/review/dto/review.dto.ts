@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, IsOptional, ValidateNested, IsArray, IsDateString, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsOptional, ValidateNested, IsArray, IsDateString, IsEnum, ArrayNotEmpty, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import { GuestType } from '../enum/review.enum';
 
@@ -77,6 +77,28 @@ export class CreateReviewDto {
     languag_id: string;
 }
 
+export class SearchReviewDto {
+    @IsArray()
+    @ArrayNotEmpty()
+    @IsString({ each: true })
+    @IsNotEmpty({ each: true })
+    searchTexts: string[];
+}
+
+export class UpdateHelpfulDto {
+    @IsNumber()
+    @IsNotEmpty()
+    reviewId: string;
+
+    @IsString()
+    @IsNotEmpty()
+    userSysId: string; // Change to the appropriate type if needed
+
+    @IsBoolean()
+    @IsNotEmpty()
+    isHelpful: boolean;
+}
+
 ////////USER DTO //////////////
 
 
@@ -111,6 +133,13 @@ export class CreateUserDto {
 }
 
 
+///////////IMAGES DTO'S///////////////
+export class ReviewImagesDto {
+
+    @IsOptional()
+    @IsString()
+    img_url: string;
+}
 
 /////////COMPREHENSIVE DTO///////////////
 export class CreateCompleteReviewDto {
@@ -126,4 +155,9 @@ export class CreateCompleteReviewDto {
     @ValidateNested({ each: true })
     @Type(() => CreateReviewCategoryDto)
     reviewCategories: CreateReviewCategoryDto[];
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateReviewCategoryDto)
+    images: ReviewImagesDto[];
 }

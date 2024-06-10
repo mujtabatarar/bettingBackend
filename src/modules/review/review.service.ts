@@ -1,12 +1,14 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ReviewEntity } from './entities/review.entity';
 import { DataSource, Repository } from 'typeorm';
 import { ReviewCategoryEntity } from './entities/review_categories.entity';
-import { CreateCompleteReviewDto } from './dto/review.dto';
+import { CreateCompleteReviewDto, SearchReviewDto, UpdateHelpfulDto } from './dto/review.dto';
 import { ResponseData } from 'helpers/ResponseHandler';
 import { errorMessage } from 'constants/messages';
 import { UserEntity } from './entities/user.entity';
+import { ReviewHelpfulEntity } from './entities/review_helpful.entity';
+import { ReviewImagesEntity } from './entities/review_images.entity';
 
 @Injectable()
 export class ReviewService {
@@ -20,6 +22,13 @@ export class ReviewService {
 
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+
+    @InjectRepository(ReviewHelpfulEntity)
+    private readonly reviewHelpfulRepository: Repository<ReviewHelpfulEntity>,
+
+    @InjectRepository(ReviewImagesEntity)
+    private readonly reviewImagesRepository: Repository<ReviewImagesEntity>,
+
     private readonly dataSource: DataSource,
   ) { }
 
@@ -39,21 +48,33 @@ export class ReviewService {
       });
       const savedReview = await queryRunner.manager.save(review);
 
-      const reviewCategories = createCompleteReviewDto.reviewCategories.map(category => {
-        return this.reviewCategoryRepository.create({
-          ...category,
-          review: savedReview,
+      let reviewCategories, reviewImages: any;
+      if (createCompleteReviewDto.reviewCategories) {
+        reviewCategories = createCompleteReviewDto.reviewCategories.map(category => {
+          return this.reviewCategoryRepository.create({
+            ...category,
+            review: savedReview,
+          });
         });
-      });
-
+      }
       const savedReviewCategories = await queryRunner.manager.save(reviewCategories);
 
-      await queryRunner.commitTransaction();
+      if (createCompleteReviewDto.images) {
+        reviewImages = createCompleteReviewDto.images.map(category => {
+          return this.reviewCategoryRepository.create({
+            ...category,
+            review: savedReview,
+          });
+        });
+      }
+      const savedImagesCategories = await queryRunner.manager.save(reviewImages);
 
+      await queryRunner.commitTransaction();
       return ResponseData.success({
         user: savedUser,
         review: savedReview,
         reviewCategories: savedReviewCategories,
+        images: savedImagesCategories,
       });
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -136,20 +157,20 @@ export class ReviewService {
     }
 
     const totalReviews = reviewData.length;
-    const overallRating = reviewData.reduce((sum, review) => sum + review.overall_rating, 0) / totalReviews;
+    const overallRating = reviewData.reduce((sum, review) => sum + review.overallRating, 0) / totalReviews;
 
     const categoriesRatings = reviewData
       .flatMap(review => review.review_category)
       .reduce((acc, reviewCategory) => {
-        if (!acc[reviewCategory.category_id]) {
-          acc[reviewCategory.category_id] = 0;
+        if (!acc[reviewCategory.categoryId]) {
+          acc[reviewCategory.categoryId] = 0;
         }
-        acc[reviewCategory.category_id] += reviewCategory.rating;
+        acc[reviewCategory.categoryId] += reviewCategory.rating;
         return acc;
       }, {});
 
     const lastThreeReviews = reviewData
-      .filter(review => review.pro_comment)
+      .filter(review => review.proComment)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, 3);
 
@@ -179,20 +200,20 @@ export class ReviewService {
       }
 
       const totalReviews = reviewData.length;
-      const overallRating = reviewData.reduce((sum, review) => sum + review.overall_rating, 0) / totalReviews;
+      const overallRating = reviewData.reduce((sum, review) => sum + review.overallRating, 0) / totalReviews;
 
       const categoriesRatings = reviewData
         .flatMap(review => review.review_category)
         .reduce((acc, reviewCategory) => {
-          if (!acc[reviewCategory.category_id]) {
-            acc[reviewCategory.category_id] = 0;
+          if (!acc[reviewCategory.categoryId]) {
+            acc[reviewCategory.categoryId] = 0;
           }
-          acc[reviewCategory.category_id] += reviewCategory.rating;
+          acc[reviewCategory.categoryId] += reviewCategory.rating;
           return acc;
         }, {});
 
       const lastThreeReviews = reviewData
-        .filter(review => review.pro_comment)
+        .filter(review => review.proComment)
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, 3);
 
@@ -229,20 +250,20 @@ export class ReviewService {
       }
 
       const totalReviews = reviewData.length;
-      const overallRating = reviewData.reduce((sum, review) => sum + review.overall_rating, 0) / totalReviews;
+      const overallRating = reviewData.reduce((sum, review) => sum + review.overallRating, 0) / totalReviews;
 
       const categoriesRatings = reviewData
         .flatMap(review => review.review_category)
         .reduce((acc, reviewCategory) => {
-          if (!acc[reviewCategory.category_id]) {
-            acc[reviewCategory.category_id] = 0;
+          if (!acc[reviewCategory.categoryId]) {
+            acc[reviewCategory.categoryId] = 0;
           }
-          acc[reviewCategory.category_id] += reviewCategory.rating;
+          acc[reviewCategory.categoryId] += reviewCategory.rating;
           return acc;
         }, {});
 
       const lastThreeReviews = reviewData
-        .filter(review => review.pro_comment)
+        .filter(review => review.proComment)
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, 3);
 
@@ -281,29 +302,29 @@ export class ReviewService {
       }
 
       const totalReviews = reviewData.length;
-      const overallRating = reviewData.reduce((sum, review) => sum + review.overall_rating, 0) / totalReviews;
+      const overallRating = reviewData.reduce((sum, review) => sum + review.overallRating, 0) / totalReviews;
 
       const categoriesRatings = reviewData
         .flatMap(review => review.review_category)
         .reduce((acc, reviewCategory) => {
-          if (!acc[reviewCategory.category_id]) {
-            acc[reviewCategory.category_id] = 0;
+          if (!acc[reviewCategory.categoryId]) {
+            acc[reviewCategory.categoryId] = 0;
           }
-          acc[reviewCategory.category_id] += reviewCategory.rating;
+          acc[reviewCategory.categoryId] += reviewCategory.rating;
           return acc;
         }, {});
 
       const lastThreeReviews = reviewData
-        .filter(review => review.pro_comment)
+        .filter(review => review.proComment)
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, 3)
         .map(review => ({
           name: review.user.name,
-          country_code: review.user.country_code,
-          img_url: review.user.img_url,
-          overall_rating: review.overall_rating,
-          pro_comment: review.pro_comment,
-          con_comment: review.con_comment,
+          country_code: review.user.countryCode,
+          img_url: review.user.imgUrl,
+          overall_rating: review.overallRating,
+          pro_comment: review.proComment,
+          con_comment: review.conComment,
           dateOfReview: review.createdAt,
         }));
 
@@ -342,16 +363,16 @@ export class ReviewService {
       }
 
       const totalReviews = reviewData.length;
-      const overallRating = reviewData.reduce((sum, review) => sum + review.overall_rating, 0) / totalReviews;
+      const overallRating = reviewData.reduce((sum, review) => sum + review.overallRating, 0) / totalReviews;
 
       const categoriesRatings = reviewData
         .flatMap(review => review.review_category)
         .reduce((acc, reviewCategory) => {
-          if (!acc[reviewCategory.category_id]) {
-            acc[reviewCategory.category_id] = { sum: 0, count: 0 };
+          if (!acc[reviewCategory.categoryId]) {
+            acc[reviewCategory.categoryId] = { sum: 0, count: 0 };
           }
-          acc[reviewCategory.category_id].sum += reviewCategory.rating;
-          acc[reviewCategory.category_id].count += 1;
+          acc[reviewCategory.categoryId].sum += reviewCategory.rating;
+          acc[reviewCategory.categoryId].count += 1;
           return acc;
         }, {});
 
@@ -361,16 +382,16 @@ export class ReviewService {
       }, {});
 
       const lastThreeReviews = reviewData
-        .filter(review => review.pro_comment)
+        .filter(review => review.proComment)
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, 3)
         .map(review => ({
           name: review.user.name,
-          country_code: review.user.country_code,
-          img_url: review.user.img_url,
-          overall_rating: review.overall_rating,
-          pro_comment: review.pro_comment,
-          con_comment: review.con_comment,
+          country_code: review.user.countryCode,
+          img_url: review.user.imgUrl,
+          overall_rating: review.overallRating,
+          pro_comment: review.proComment,
+          con_comment: review.conComment,
           dateOfReview: review.createdAt,
         }));
 
@@ -390,5 +411,92 @@ export class ReviewService {
     }
   }
 
-}
+  async updateHelpfulCount(updateReviewDto: any): Promise<ResponseData> {
+    try {
+      const { reviewId, action } = updateReviewDto;
 
+      const review = await this.reviewRepository.findOne(reviewId);
+      if (!review) {
+        throw new NotFoundException('Review not found');
+      }
+
+      if (action === 'helpful') {
+        review.helpfulCount += 1;
+      } else if (action === 'not_helpful') {
+        review.not_helpful_count -= 1;
+
+      } else {
+        throw new Error('Invalid action');
+      }
+
+      await this.reviewRepository.save(review);
+
+      return ResponseData.success(review);
+    } catch (error) {
+      return ResponseData.error(
+        HttpStatus.BAD_REQUEST,
+        errorMessage.SOMETHING_WENT_WRONG,
+      );
+    }
+  }
+
+  async searchProComments(searchReviewDto: SearchReviewDto): Promise<ResponseData> {
+    try {
+      const { searchTexts } = searchReviewDto;
+
+      let query = this.reviewRepository
+        .createQueryBuilder('review')
+        .leftJoinAndSelect('review.user', 'user');
+
+      searchTexts.forEach((text, index) => {
+        query = query.andWhere(`review.pro_comment LIKE :searchText${index}`, {
+          [`searchText${index}`]: `%${text}%`,
+        });
+      });
+      const reviews = await query.getMany();
+      return ResponseData.success(reviews);
+    } catch (error) {
+      return ResponseData.error(
+        HttpStatus.BAD_REQUEST,
+        errorMessage.SOMETHING_WENT_WRONG,
+      );
+    }
+  }
+
+  async updateHelpfulCountNew(updateHelpfulDto: UpdateHelpfulDto): Promise<ResponseData> {
+    try {
+      const { reviewId, userSysId, isHelpful } = updateHelpfulDto;
+
+      const review = await this.reviewRepository.findOne({ where: { id: reviewId } });
+      if (!review) {
+        throw new NotFoundException('Review not found');
+      }
+
+      const existingMark = await this.reviewHelpfulRepository.findOne({ where: { review, userSysId: userSysId } });
+
+      if (existingMark) {
+        throw new ConflictException('You have already marked this review');
+      }
+
+      if (isHelpful) {
+        review.helpfulCount = (review.helpfulCount || 0) + 1;
+      } else {
+        review.not_helpful_count = (review.not_helpful_count || 0) + 1;
+      }
+
+      const reviewHelpful = this.reviewHelpfulRepository.create({ review, userSysId, isHelpful });
+      await this.reviewHelpfulRepository.save(reviewHelpful);
+      await this.reviewRepository.save(review);
+
+      return ResponseData.success({
+        message: `Marked as ${isHelpful ? 'helpful' : 'not helpful'}`,
+        review,
+      });
+    } catch (err) {
+      return ResponseData.error(
+        HttpStatus.BAD_REQUEST,
+        errorMessage.SOMETHING_WENT_WRONG,
+      );
+    }
+  }
+}

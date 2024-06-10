@@ -1,21 +1,23 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractEntity } from 'transportation-common';
 import { ReviewEntity } from './review.entity';
+import { BaseEntity } from 'helpers/base.entity';
 
 @Entity({ name: 'review_categories' })
-@Index(['review_id'])
+@Index(['reviewId'])
 export class ReviewCategoryEntity
-    extends AbstractEntity {
+
+    extends BaseEntity {
     @Column()
-    review_id: string;
+    reviewId: string;
 
     @Column()
-    category_id: string;
+    categoryId: string;
 
     @Column({ type: 'float', default: 0 })
     rating: number;
 
     @ManyToOne(() => ReviewEntity, review => review.review_category)
-    @JoinColumn({ name: 'review_id' })
+    @JoinColumn({ name: 'reviewId' })
     review: ReviewEntity;
 }

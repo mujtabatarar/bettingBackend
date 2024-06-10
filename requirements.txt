@@ -1,0 +1,134 @@
+---
+# Backend Functionality for Peer-to-Peer Sports Betting Platform
+
+I found some ambiguities/uncompleted-flow in figma and api's list while development. and need further discussion.
+1 - user wallet. How this is going to work? 
+    Option - a, Are you people manually going to bill him, and user will have unlimmited betting option? for example you will bill him when user will left your club, 
+    Option - b, Are you people manually going to add his walletAmount, For example user will pay your admin manually and admin will add amount in their account, which user will spend on bets?
+    Option - c, If you prople are going to use this over the internet than will you use some sort of payment system,
+           which we will integrate on front-end and backend and require excessive work from both client and developer side.
+           you may need new bussiness bank account api to pay to users in case of bet winning.
+2 - Will you have multiple admins or just one?
+3 - Admin will create a bet, with live, popular, CBB tournament types, and sports categories?
+4 - We studied the betting system, the wokring of spread and wager, bet, and odd, 
+    Do user will input one field from bet and wagger? and system will calclate 2nd field based on odd of that match?
+    If no. Than should user will have limmet between bet and wager.
+
+
+0.1### 1.2 FAQ create
+- **Endpoint**: POST /api/login
+- **Functionality**:
+  - Accepts email and password
+  - Validates input data
+  - Checks email and password against stored data
+  - Generates a JWT token for session management
+  - Returns the token to the user
+
+## 1. User Authentication (Optional)
+### 1.1 User Registration
+- **Endpoint**: POST /api/register
+- **Functionality**:
+  - Accepts user details (username, email, password, name(by dev, from figma), refferalCode(by de, from figma))
+  - Validates input data
+  - Hashes the password using bcrypt
+  - Stores user data in the database
+  - Optionally sends a confirmation email with a verification link
+
+### 1.2 User Login
+- **Endpoint**: POST /api/login
+- **Functionality**:
+  - Accepts email and password
+  - Validates input data
+  - Checks email and password against stored data
+  - Generates a JWT token for session management
+  - Returns the token to the user
+
+### 1.2 User forgetPassword
+- **Endpoint**: POST /api/forgetPassword
+- **Functionality**:
+  - Accepts email,
+  - Validates input data
+  - send a link to the email to enter new password,
+  - replace old password.
+  - send your to new login screen.
+
+## 2. Bet Management
+### 2.1 Create a Bet
+- **Endpoint**: POST /api/bets/create
+- **Functionality**:
+  - Accepts bet details (description, amount, sport category)
+  - Validates input data
+  - Sends an email with bet details to streamwageronline@gmail.com for approval
+  - Stores bet in the database with a status of 'Pending Approval'
+
+
+
+
+### 2.2 Approve a Bet (Admin Only)
+- **Endpoint**: PUT /api/bets/approve/:betId
+- **Functionality**:
+  - Accepts bet ID
+  - Updates bet status to 'Approved'
+  - Adds the bet to the landing page for users to view and accept
+
+### 2.3 Add Admin Bet (Admin Only)
+- **Endpoint**: POST /api/bets/admin/create
+- **Functionality**:
+  - Accepts bet details (description, amount, sport category)
+  - Validates input data
+  - Stores bet in the database with a status of 'Approved'
+  - Adds the bet to the landing page for users to view and accept
+
+### 2.4 Accept a Bet
+- **Endpoint**: POST /api/bets/accept/:betId
+- **Functionality**:
+  - Accepts bet ID
+  - Validates bet status
+  - Updates bet status to 'Locked'
+  - Prevents other users from placing wagers on the same bet
+  - Optionally sends confirmation emails to involved users
+
+
+## 3. Bet Categorization
+### 3.1 Separate Sports Categories
+- **Endpoint**: GET /api/bets/sports/category
+- **Functionality**:
+  - Retrieves bets filtered by sport category
+  - Displays bets on the landing page under respective sport categories
+
+## 4. User Accounts and Bet Tracking (Optional)
+### 4.1 User Registration and Login
+- **Reuses Endpoints**: POST /api/register, POST /api/login
+- **Functionality**:
+  - Allows users to sign up or log in to track their bets
+
+### 4.2 Track Bets
+- **Endpoint**: GET /api/users/:userId/bets
+- **Functionality**:
+  - Retrieves a list of bets placed or accepted by the user
+  - Displays bet history and current status
+
+## 5. Notifications
+### 5.1 Email Notifications
+- **Functionality**:
+  - Sends emails for bet creation, acceptance, and status updates
+  - Uses email service (e.g., SendGrid)
+
+### 5.2 In-app Notifications (Optional)
+- **Endpoint**: POST /api/notifications/in-app
+- **Functionality**:
+  - Accepts notification details (type, userId, content)
+  - Stores notification in the database
+  - Pushes notification to the user's app
+
+## 6. Framework and Language
+### 6.1 Preferred: Node.js with Express
+- **Structure**:
+  - Organize codebase following MVC (Model-View-Controller) architecture
+  - Utilize Express for routing and middleware management
+
+## 7. Database
+### 7.1 Preferred: PostgreSQL
+- **Functionality**:
+  - Relational database for structured data storage
+  - Support for complex queries and transactions

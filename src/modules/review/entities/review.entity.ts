@@ -2,46 +2,47 @@ import { Column, Entity, Index, BeforeInsert, BeforeUpdate, ManyToOne, OneToMany
 import { AbstractEntity } from 'transportation-common';
 import { ReviewCategoryEntity } from './review_categories.entity';
 import { UserEntity } from './user.entity';
-
-
+import { ReviewHelpfulEntity } from './review_helpful.entity';
+import { ReviewImagesEntity } from './review_images.entity';
 @Entity({ name: 'reviews' })
-@Index(['hotel_id'])
-@Index(['pro_comment'])
+@Index(['hotelId'])
+@Index(['proComment'])
 export class ReviewEntity extends AbstractEntity {
-    @Column({ nullable: false })
-    hotel_id: string;
 
     @Column({ nullable: false })
-    room_id: string;
+    hotelId: string;
 
     @Column({ nullable: false })
-    user_sys_id: string;
+    roomId: string;
+
+    @Column({ nullable: false })
+    userSysId: string;
 
     @Column({ nullable: true })
-    room_type: string;
+    roomType: string;
 
     @Column({ nullable: true })
     title: string;
 
     @Column({ nullable: true })
-    pro_comment: string;
+    proComment: string;
 
     @Column({ nullable: true })
-    con_comment: string;
+    conComment: string;
 
     @Column({ nullable: true })
-    hotel_response: string;
+    hotelResponse: string;
 
     @Column({ nullable: false })
-    overall_rating: number;
+    overallRating: number;
 
     @Column({ nullable: true })
-    helpful_count: number;
+    helpfulCount: number;
 
     @Column({ nullable: true })
     not_helpful_count: number;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, })
     language_id: string;
 
     @ManyToOne(() => UserEntity, user => user.reviews)
@@ -50,5 +51,11 @@ export class ReviewEntity extends AbstractEntity {
 
     @OneToMany(() => ReviewCategoryEntity, review_category => review_category.review)
     review_category: ReviewCategoryEntity[];
+
+    @OneToMany(() => ReviewHelpfulEntity, reviewHelpful => reviewHelpful.review)
+    helpfulMarks: ReviewHelpfulEntity[];
+
+    @OneToMany(() => ReviewImagesEntity, image => image.review)
+    images: ReviewImagesEntity[];
 
 }

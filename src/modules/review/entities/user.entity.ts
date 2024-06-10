@@ -2,6 +2,7 @@ import { Column, Entity, Index, BeforeInsert, BeforeUpdate, OneToMany } from 'ty
 import { AbstractEntity } from 'transportation-common';
 import { ReviewEntity } from 'src/modules/review/entities/review.entity';
 import { GuestType } from '../enum/review.enum';
+import { ReviewHelpfulEntity } from './review_helpful.entity';
 
 @Entity({ name: 'review_user' })
 export class UserEntity extends AbstractEntity {
@@ -10,19 +11,22 @@ export class UserEntity extends AbstractEntity {
     name: string;
 
     @Column({ nullable: false })
-    user_sys_id: string;
+    userName: string;
+
+    @Column({ nullable: false })
+    userSysId: string;
 
     @Column({ nullable: true })
-    img_url: string;
+    imgUrl: string;
 
     @Column({ nullable: true })
-    country_code: string;
+    countryCode: string;
 
     @Column({ type: 'timestamp', nullable: true })
-    check_in: Date;
+    checkIn: Date;
 
     @Column({ type: 'timestamp', nullable: true })
-    check_out: Date;
+    checkOut: Date;
 
     @Column({
         type: 'enum',
@@ -33,4 +37,7 @@ export class UserEntity extends AbstractEntity {
 
     @OneToMany(() => ReviewEntity, review => review.user)
     reviews: ReviewEntity[];
+
+
+
 }
