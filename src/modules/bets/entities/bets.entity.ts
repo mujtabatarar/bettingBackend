@@ -3,6 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { AbstractEntity } from 'transportation-common';
 import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { MatchEntity } from './match.entity';
+import { BetStatusEnum } from '../enum/bet.enum';
 
 @Entity('bets')
 export class BetsEntity extends AbstractEntity {
@@ -16,7 +17,7 @@ export class BetsEntity extends AbstractEntity {
     @Column({ type: 'decimal', nullable: true, default: null })
     toWinAmount: number;
 
-    @Column({ type: 'enum', enum: ['approved', 'pending-approval', 'rejected', 'by_admin'], default: 'pending' })
+    @Column({ type: 'enum', enum: BetStatusEnum, default: BetStatusEnum.PENDING_APPROVAL })
     status: string;
 
     @Column()
@@ -25,7 +26,7 @@ export class BetsEntity extends AbstractEntity {
     @Column()
     matchId: string;
 
-    @ManyToOne(() => UserEntity, user => user.createdWages)
+    @ManyToOne(() => UserEntity, user => user.createdBets)
     @JoinColumn({ name: 'createdBy' })
     user: UserEntity;
 
@@ -34,7 +35,7 @@ export class BetsEntity extends AbstractEntity {
     match: MatchEntity;
 
     // Relationship to the User who accepted the wage (should be an admin)
-    @ManyToOne(() => UserEntity, user => user.acceptedWages)
+    @ManyToOne(() => UserEntity, user => user.acceptedBets)
     @JoinColumn({ name: 'acceptedBy' })
     acceptedBy: UserEntity;
 

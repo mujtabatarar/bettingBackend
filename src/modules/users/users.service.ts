@@ -1,5 +1,5 @@
 import { BadRequestException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { ForgotPasswordDto, LoginDto, ResetPasswordDto, SignupDto, UpdateUserDto } from './dto/user.dto';
+import { ForgotPasswordDto, IdDto, LoginDto, ResetPasswordDto, SignupDto, UpdateUserDto } from './dto/user.dto';
 import { ResponseData, ResponseHandler } from 'helpers/ResponseHandler';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from './entities/user.entity';
@@ -8,9 +8,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { errorMessage } from 'constants/messages';
 // const bcrypt = require('bcrypt');
 // import { bcrypt } from 'bcrypt';
-import bcrypt from "bcrypt";
+import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { MailerService } from '@nestjs-modules/mailer';
+import appConfig from 'config/appConfig';
 
 
 @Injectable()
@@ -55,6 +56,7 @@ export class UsersService {
 
   async login(data: LoginDto): Promise<ResponseHandler> {
     try {
+      console.log("1-1--1-1-1-1--1--1-1");
       const user = await this.userRepository.findOne({ where: { email: data.email } });
       if (!user) {
         return ResponseData.error(
@@ -63,6 +65,8 @@ export class UsersService {
         );
       }
 
+      console.log(user.password);
+      console.log(data.password);
       const isPasswordValid = await bcrypt.compare(data.password, user.password);
       if (!isPasswordValid) {
         return ResponseData.error(
@@ -80,6 +84,7 @@ export class UsersService {
           id: user.id,
           name: user.name,
           email: user.email,
+          isAdmin: user.isAdmin,
         },
         token,
       });
@@ -95,6 +100,7 @@ export class UsersService {
   async update(id: string, data: UpdateUserDto): Promise<ResponseHandler> {
     try {
       // Attempt to find and update the user by ID
+      // const { id } = query;
       const existingUser = await this.userRepository.findOne({ where: { id } });
 
       if (!existingUser) {
@@ -137,7 +143,7 @@ export class UsersService {
 
       await this.userRepository.save(user);
 
-      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&email=${email}`;
+      const resetUrl = `${appConfig().frontEndUrl}/reset-password?token=${resetToken}&email=${email}`;
 
       await this.mailerService.sendMail({
         to: user.email,
@@ -154,6 +160,8 @@ export class UsersService {
       //   HttpStatus.BAD_REQUEST,
       //   err?.message || errorMessage.SOMETHING_WENT_WRONG,
       // );
+      console.log("forgotPassword");
+      console.log(err.message);
     }
   }
 

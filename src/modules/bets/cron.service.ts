@@ -1,7 +1,7 @@
 import { getRepository, LessThanOrEqual, Repository } from 'typeorm';
 import * as cron from 'node-cron';
-import { MatchEntity } from './entities/bets.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { MatchEntity } from './entities/match.entity';
 
 export class CronService {
 
@@ -22,14 +22,14 @@ export class CronService {
                 // Find matches that are scheduled and their matchDate is in the past
                 const matchesToGoLive = await this.matchRepository.find({
                     where: {
-                        status: 'scheduled',
+                        matchType: 'scheduled',
                         matchDate: LessThanOrEqual(now)
                     }
                 });
 
                 // Update status of these matches to 'live'
                 for (const match of matchesToGoLive) {
-                    match.status = 'live';
+                    match.matchType = 'live';
                     await this.matchRepository.save(match);
                     console.log(`Match ${match.id} set to live`);
                 }

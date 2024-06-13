@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Request } from 
 import { BetsService } from './bets.service';
 import { ResponseHandler } from 'helpers/ResponseHandler';
 import { CreateAdminBetDto, CreateBetViaWebDto, UpdateBetDto } from './dto/bets.dto';
+import { BetStatusEnum } from './enum/bet.enum';
 
 @Controller('api/bets')
 export class BetsController {
@@ -26,7 +27,7 @@ export class BetsController {
 
   @Post('accept/:betId')
   async acceptBet(@Param('betId') betId: string): Promise<ResponseHandler> {
-    const updateBetDto: UpdateBetDto = { status: 'Locked' };
+    const updateBetDto: UpdateBetDto = { status: BetStatusEnum.APPROVED };
     return this.betsService.updateBet(betId, updateBetDto);
   }
 

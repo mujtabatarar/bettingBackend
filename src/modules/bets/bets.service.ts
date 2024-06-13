@@ -90,24 +90,24 @@ export class BetsService {
     }
   }
 
-  // async updateBet(id: string): Promise<ResponseHandler> {
-  //   try {
-  //     await this.betsRepository.update(id, updateBetDto);
-  //     const updatedBet = await this.betsRepository.findOne({ where: { id } });
-  //     if (!updatedBet) {
-  //       return ResponseData.error(
-  //         HttpStatus.NOT_FOUND,
-  //         'Bet not found',
-  //       );
-  //     }
-  //     return ResponseData.success(updatedBet);
-  //   } catch (err) {
-  //     return ResponseData.error(
-  //       HttpStatus.BAD_REQUEST,
-  //       err?.message || 'Something went wrong',
-  //     );
-  //   }
-  // }
+  async updateBet(id: string, param: UpdateBetDto): Promise<ResponseHandler> {
+    try {
+      await this.betsRepository.update(id, param);
+      const updatedBet = await this.betsRepository.findOne({ where: { id } });
+      if (!updatedBet) {
+        return ResponseData.error(
+          HttpStatus.NOT_FOUND,
+          'Bet not found',
+        );
+      }
+      return ResponseData.success(updatedBet);
+    } catch (err) {
+      return ResponseData.error(
+        HttpStatus.BAD_REQUEST,
+        err?.message || 'Something went wrong',
+      );
+    }
+  }
 
   async findBetById(id: string): Promise<ResponseHandler> {
     try {

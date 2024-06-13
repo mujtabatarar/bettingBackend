@@ -5,11 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '@nestjs-modules/mailer';
+import appConfig from 'config/appConfig';
 
 @Module({
   imports: [
+    JwtModule.register({
+      secret: appConfig().JwtSecret,
+      signOptions: { expiresIn: appConfig().JwtExpires },
+    }),
     TypeOrmModule.forFeature([UserEntity]),
-    JwtModule,
+    // JwtModule,
     MailerModule
   ],
   controllers: [UsersController],

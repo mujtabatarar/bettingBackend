@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { AbstractEntity } from 'transportation-common';
-import { WagesEntity } from 'src/modules/bets/entities/wages.entity';
+import { BetsEntity } from 'src/modules/bets/entities/bets.entity';
 
 @Entity()
 export class UserEntity extends AbstractEntity {
@@ -12,7 +12,7 @@ export class UserEntity extends AbstractEntity {
     @Column()
     name: string;
 
-    @Column({ unique: true })
+    @Column({ unique: true, nullable: true })
     username: string;
 
     @Column()
@@ -25,7 +25,7 @@ export class UserEntity extends AbstractEntity {
     refferalCode: string;
 
     @Column({ default: false })
-    isThisUserAdmin: boolean;
+    isAdmin: boolean;
 
     @Column({ nullable: true })
     resetPasswordToken: string;
@@ -33,11 +33,11 @@ export class UserEntity extends AbstractEntity {
     @Column({ type: 'timestamp', nullable: true })
     resetPasswordExpires: Date;
 
-    @OneToMany(() => WagesEntity, wage => wage.createdBy)
-    createdWages: WagesEntity[];
+    @OneToMany(() => BetsEntity, bet => bet.createdBy)
+    createdBets: BetsEntity[];
 
-    @OneToMany(() => WagesEntity, wage => wage.acceptedBy)
-    acceptedWages: WagesEntity[];
+    @OneToMany(() => BetsEntity, bet => bet.acceptedBy)
+    acceptedBets: BetsEntity[];
 
     @BeforeInsert()
     async hashPassword() {

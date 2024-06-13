@@ -19,7 +19,7 @@ export const mailerConfig: MailerOptions = {
         from: process.env.FROM_EMAIL,
     },
     template: {
-        dir: __dirname + '/../templates',
+        dir: __dirname + '/../src/templates',
         adapter: new HandlebarsAdapter(), // or new PugAdapter(), or new EjsAdapter()
         options: {
             strict: true,
