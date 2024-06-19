@@ -1,7 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ReviewModule } from './modules/review/review.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from 'config/typeOrmConfig';
 import { ConfigModule } from '@nestjs/config';
@@ -46,7 +45,6 @@ import { JwtModule } from '@nestjs/jwt';
       secret: appConfig().JwtSecret,
       signOptions: { expiresIn: '1h' },
     }),
-    ReviewModule,
     UsersModule,
     BetsModule],
   controllers: [AppController],
