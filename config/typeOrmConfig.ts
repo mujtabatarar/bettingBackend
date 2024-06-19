@@ -38,5 +38,5 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     migrationsRun: false,
     logging: true,
     migrations: [__dirname + '/migrations/*.ts'],
-    namingStrategy: new SnakeNamingStrategy(),
+    // namingStrategy: new SnakeNamingStrategy(),
 };

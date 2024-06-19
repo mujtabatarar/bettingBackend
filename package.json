@@ -31,6 +31,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/typeorm": "^10.0.2",
     "bcrypt": "^5.1.1",
+    "ejs": "^3.1.10",
     "handlebars": "^4.7.8",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.13",

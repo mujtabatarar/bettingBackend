@@ -1,8 +1,9 @@
 import { AbstractEntity } from 'transportation-common';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BetsEntity } from './bets.entity';
+import { GameTypeEntity } from './gameType.entity';
 
-@Entity()
+@Entity('matches')
 export class MatchEntity extends AbstractEntity {
 
     @Column({ nullable: false })
@@ -26,8 +27,12 @@ export class MatchEntity extends AbstractEntity {
     @Column({ type: 'timestamp', nullable: false })
     matchDate: Date;
 
-    @Column({ nullable: false })
-    gameType: string;
+    @Column({ nullable: true })
+    gameTypeId: string;
+
+    @ManyToOne(() => GameTypeEntity, gameType => gameType.matches, { nullable: false })
+    @JoinColumn({ name: 'gameTypeId' })
+    gameType: GameTypeEntity;
 
     @Column({ nullable: false, default: false })
     isLocked: boolean;

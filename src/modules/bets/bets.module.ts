@@ -7,10 +7,11 @@ import { MailerModule, MailerService } from '@nestjs-modules/mailer';
 import { UserEntity } from '../users/entities/user.entity';
 import { BetsEntity } from './entities/bets.entity';
 import { MatchEntity } from './entities/match.entity';
+import { GameTypeEntity } from './entities/gameType.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BetsEntity, UserEntity, MatchEntity]),
+    TypeOrmModule.forFeature([BetsEntity, UserEntity, MatchEntity, GameTypeEntity]),
     MailerModule,
   ],
   controllers: [BetsController],

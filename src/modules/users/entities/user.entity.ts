@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { AbstractEntity } from 'transportation-common';
 import { BetsEntity } from 'src/modules/bets/entities/bets.entity';
 
-@Entity()
+@Entity('users')
 export class UserEntity extends AbstractEntity {
 
     @Column({ unique: true })
@@ -13,7 +13,7 @@ export class UserEntity extends AbstractEntity {
     name: string;
 
     @Column({ unique: true, nullable: true })
-    username: string;
+    userName: string;
 
     @Column()
     password: string;

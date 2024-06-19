@@ -1,5 +1,5 @@
 import { BadRequestException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { ForgotPasswordDto, IdDto, LoginDto, ResetPasswordDto, SignupDto, UpdateUserDto } from './dto/user.dto';
+import { ForgotPasswordDto, IdDto, LoginDto, ResetPasswordDto, SignupDto, UpdateUserDto, UserFilterDto } from './dto/user.dto';
 import { ResponseData, ResponseHandler } from 'helpers/ResponseHandler';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from './entities/user.entity';
@@ -29,14 +29,23 @@ export class UsersService {
 
   async create(data: SignupDto): Promise<ResponseHandler> {
     try {
-      // Check if a user with the same email already exists
-      const existingUser = await this.userRepository.findOne({ where: { email: data.email } });
-      if (existingUser) {
+      const userQuery = await this.userRepository.createQueryBuilder('user');
+      userQuery.where('user.email = :email', { email: data.email });
+      userQuery.orWhere('user.phoneNumber = :phoneNumber', { phoneNumber: data.phoneNumber });
+      const result = await userQuery.getOne();
+      if (result?.email === data.email) {
         return ResponseData.error(
-          HttpStatus.CONFLICT,
+          HttpStatus.NOT_ACCEPTABLE,
           errorMessage.USER_ALREADY_EXISTS,
         );
       }
+      if (result?.phoneNumber === data.phoneNumber) {
+        return ResponseData.error(
+          HttpStatus.NOT_ACCEPTABLE,
+          errorMessage.PHONE_NO_ALLREADY_IN_USE,
+        );
+      }
+
 
       // Create and save the new user
       const user = this.userRepository.create(data);
@@ -75,8 +84,16 @@ export class UsersService {
         );
       }
 
+      const jwtUser = {
+        id: user.id,
+        name: user.name,
+        userName: user.userName,
+        email: user.email,
+        isAdmin: user.isAdmin
+      }
+
       // Generate a JWT token for the user
-      const token = await this.jwtService.signAsync({ userId: user.id });
+      const token = await this.jwtService.signAsync(jwtUser);
 
       // Return the user data and the token
       return ResponseData.success({
@@ -84,7 +101,9 @@ export class UsersService {
           id: user.id,
           name: user.name,
           email: user.email,
-          isAdmin: user.isAdmin,
+          userName: user.userName,
+          phoneNumber: user.phoneNumber,
+          isAdmin: user.isAdmin
         },
         token,
       });
@@ -110,6 +129,31 @@ export class UsersService {
         );
       }
 
+      if (data.userName || data.phoneNumber) {
+        const userQuery = await this.userRepository.createQueryBuilder('user');
+        if (data.userName) {
+          userQuery.orWhere('user.userName = :userName', { userName: data.userName });
+        }
+        if (data.phoneNumber) {
+          userQuery.orWhere('user.phoneNumber = :phoneNumber', { phoneNumber: data.phoneNumber });
+        }
+        const result = await userQuery.getOne();
+        if (result?.id != id) {
+          if (result?.phoneNumber === data.phoneNumber && result?.phoneNumber != undefined) {
+            return ResponseData.error(
+              HttpStatus.NOT_ACCEPTABLE,
+              errorMessage.PHONE_NO_ALLREADY_IN_USE,
+            );
+          }
+          if (result?.userName === data.userName && result?.userName != undefined) {
+            return ResponseData.error(
+              HttpStatus.NOT_ACCEPTABLE,
+              errorMessage.USER_NAME_ALLREADY_TAKEN,
+            );
+          }
+        }
+      }
+
       // Update the user entity with new data
       await this.userRepository.update(id, data);
       const updatedUser = await this.userRepository.findOne({ where: { id } });
@@ -125,7 +169,7 @@ export class UsersService {
     }
   }
 
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<ResponseHandler> {
     try {
       const { email } = forgotPasswordDto;
       const user = await this.userRepository.findOne({ where: { email } });
@@ -144,7 +188,7 @@ export class UsersService {
       await this.userRepository.save(user);
 
       const resetUrl = `${appConfig().frontEndUrl}/reset-password?token=${resetToken}&email=${email}`;
-
+      console.log(resetToken);
       await this.mailerService.sendMail({
         to: user.email,
         subject: 'Password Reset Request',
@@ -154,18 +198,16 @@ export class UsersService {
           resetUrl,
         },
       });
+      return ResponseData.success("Reset Link have been sent to you email address")
     } catch (err) {
-      // this.logger.error(`update -> error: ${JSON.stringify(err.message)}`);
-      // return ResponseData.error(
-      //   HttpStatus.BAD_REQUEST,
-      //   err?.message || errorMessage.SOMETHING_WENT_WRONG,
-      // );
-      console.log("forgotPassword");
-      console.log(err.message);
+      return ResponseData.error(
+        HttpStatus.BAD_REQUEST,
+        err?.message || errorMessage.SOMETHING_WENT_WRONG,
+      );
     }
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<void> {
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<ResponseData> {
     const { token, newPassword } = resetPasswordDto;
 
     const user = await this.userRepository.findOne({
@@ -190,12 +232,53 @@ export class UsersService {
     user.resetPasswordExpires = null;
 
     await this.userRepository.save(user);
+    return ResponseData.success("Passwords updated successfully")
   } catch(err) {
     // this.logger.error(`update -> error: ${JSON.stringify(err.message)}`);
     return ResponseData.error(
       HttpStatus.BAD_REQUEST,
       err?.message || errorMessage.SOMETHING_WENT_WRONG,
     );
+  }
+
+  async findAllUsers(filterDto: UserFilterDto, adminUser: any): Promise<ResponseHandler> {
+    if (!adminUser.isAdmin) {
+      return ResponseData.error(HttpStatus.UNAUTHORIZED, "Unauthorized");
+    }
+    const { email, name, userName, isAdmin, phoneNumber, page = 1, limit = 10 } = filterDto;
+    const query = this.userRepository.createQueryBuilder('user');
+
+    if (email) {
+      query.andWhere('user.email ILIKE :email', { email: `%${email}%` });
+    }
+
+    if (name) {
+      query.andWhere('user.name ILIKE :name', { name: `%${name}%` });
+    }
+
+    if (userName) {
+      query.andWhere('user.userName ILIKE :userName', { userName: `%${userName}%` });
+    }
+
+    if (phoneNumber) {
+      query.andWhere('user.phoneNumber ILIKE :phoneNumber', { phoneNumber: `%${phoneNumber}%` });
+    }
+
+    if (isAdmin !== undefined) {
+      query.andWhere('user.isAdmin = :isAdmin', { isAdmin });
+    }
+
+    query.skip((page - 1) * limit).take(limit);
+
+    try {
+      const [users, total] = await query.getManyAndCount();
+      return ResponseData.success({ users, total, page, limit });
+    } catch (err) {
+      return ResponseData.error(
+        HttpStatus.BAD_REQUEST,
+        err?.message || 'Something went wrong',
+      );
+    }
   }
 }
 
