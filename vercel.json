@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "env": {
+    "TCP_HOST": "0.0.0.0",
+    "TCP_PORT": "3009",
+    "MYSQL_DB_USER": "root",
+    "MYSQL_DB_PASSWORD": "",
+    "MYSQL_DB_HOST": "127.0.0.1",
+    "MYSQL_DB_PORT": "3306",
+    "MYSQL_DB": "reviewms",
+    "KAFKA_HOST": "127.0.0.1:9092",
+    "LOG_MODE": "development",
+    "POSTGRES_DB_HOST": "ep-sweet-haze-a5r6errq.us-east-2.aws.neon.tech",
+    "POSTGRES_DB_PORT": "5432",
+    "POSTGRES_DB_USER": "bet-db_owner",
+    "POSTGRES_DB_PASSWORD": "VFp6AYNo4jGz",
+    "POSTGRES_DB": "bet-db",
+    "SMTP_HOST": "smtp.gmail.com",
+    "SMTP_PORT": "587",
+    "SMTP_SECURE": "false",
+    "SMTP_USERNAME": "mujtabatarar@gmail.com",
+    "SMTP_PASSWORD": "mcraffcfycjqhwfr",
+    "FROM_EMAIL": "no-reply@bettingapp.com",
+    "SUPER_ADMIN_EMAIL": "mujtabatarar@gmail.com",
+    "JWT_SECRET": "11223344",
+    "JWT_EXPIRES": "60m",
+    "FRONTEND_URL": "www.betWebsite.com"
+  },
+  "builds": [
+    {
+      "src": "src/main.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/main.ts",
+      "methods": ["GET", "POST", "PATCH", "DELETE"]
+    }
+  ]
+}
