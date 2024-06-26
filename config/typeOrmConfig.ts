@@ -38,5 +38,11 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     migrationsRun: false,
     logging: true,
     migrations: [__dirname + '/migrations/*.ts'],
+    ssl: {
+        rejectUnauthorized: false
+    },
+    extra: {
+        options: `project=${process.env.ENDPOINT_ID}`,
+    },
     // namingStrategy: new SnakeNamingStrategy(),
 };

@@ -3,12 +3,6 @@
   "env": {
     "TCP_HOST": "0.0.0.0",
     "TCP_PORT": "3009",
-    "MYSQL_DB_USER": "root",
-    "MYSQL_DB_PASSWORD": "",
-    "MYSQL_DB_HOST": "127.0.0.1",
-    "MYSQL_DB_PORT": "3306",
-    "MYSQL_DB": "reviewms",
-    "KAFKA_HOST": "127.0.0.1:9092",
     "LOG_MODE": "development",
     "POSTGRES_DB_HOST": "ep-sweet-haze-a5r6errq.us-east-2.aws.neon.tech",
     "POSTGRES_DB_PORT": "5432",
