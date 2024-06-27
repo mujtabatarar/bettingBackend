@@ -1,30 +1,10 @@
-// import { TypeOrmModuleOptions } from "@nestjs/typeorm";
-// // import { SnakeNamingStrategy } from "./snake-naming.strategy";
-// import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-
-// require('dotenv').config();
-
-// export const typeOrmConfig: TypeOrmModuleOptions = {
-//     type: 'mysql',
-//     host: process.env.MYSQL_DB_HOST,
-//     port: Number(process.env.MYSQL_DB_PORT),
-//     username: process.env.MYSQL_DB_USER,
-//     password: process.env.MYSQL_DB_PASSWORD,
-//     database: process.env.MYSQL_DB,
-//     entities: ['dist/**/**.entity{.ts,.js}'],
-//     synchronize: true,
-//     migrationsRun: false,
-//     logging: true,
-//     migrations: [__dirname + '/migrations/*.ts'],
-//     namingStrategy: new SnakeNamingStrategy(),
-
-// };
-
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
+
+const caCertificate = process.env.SSL_CA_CERT?.replace(/\\n/g, '\n') ?? '';
 
 export const typeOrmConfig: TypeOrmModuleOptions = {
     type: 'postgres',
@@ -39,10 +19,8 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     logging: true,
     migrations: [__dirname + '/migrations/*.ts'],
     ssl: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
+        ca: caCertificate,
     },
-    extra: {
-        options: `project=${process.env.ENDPOINT_ID}`,
-    },
-    // namingStrategy: new SnakeNamingStrategy(),
+    namingStrategy: new SnakeNamingStrategy(),
 };
